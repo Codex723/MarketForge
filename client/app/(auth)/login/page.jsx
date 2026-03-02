@@ -56,11 +56,7 @@ export default function LoginPage() {
               Discover curated products from premium vendors, delivered with care and precision.
             </p>
           </div>
-          <div className="flex gap-6">
-            {["10K+ Products", "500+ Vendors", "Trusted Payments"].map((t) => (
-              <div key={t} className="text-xs text-stone-500 font-medium tracking-wide uppercase">{t}</div>
-            ))}
-          </div>
+          
         </div>
       </div>
 
