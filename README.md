@@ -258,4 +258,4 @@ All prices across the entire platform display in **Nigerian Naira (₦)** using 
 
 ---
 
-Built with ❤️ by **Kelvin Bidi** 🇳🇬
+Built by **Kelvin Bidi** 🇳🇬
