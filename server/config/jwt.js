@@ -1,29 +1,28 @@
 import jwt from "jsonwebtoken";
 
-// Generate access token (short-lived)
 export const generateAccessToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
     expiresIn: "15m",
   });
 };
 
-// Generate refresh token (long-lived)
 export const generateRefreshToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_REFRESH_SECRET, {
     expiresIn: "7d",
   });
 };
 
-// Send tokens — access token in response, refresh token in httpOnly cookie
+// Fixed: sameSite "none" required for cross-origin cookies (Vercel frontend + Render backend)
 export const sendTokens = (res, user) => {
   const accessToken = generateAccessToken(user._id);
   const refreshToken = generateRefreshToken(user._id);
 
-  // Set refresh token as secure httpOnly cookie
+  const isProduction = process.env.NODE_ENV === "production";
+
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "strict",
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 
