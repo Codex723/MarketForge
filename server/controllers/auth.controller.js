@@ -2,35 +2,27 @@ import User from "../models/user.model.js";
 import { sendTokens, generateAccessToken } from "../config/jwt.js";
 import jwt from "jsonwebtoken";
 
-// @desc    Register a new user or vendor
-// @route   POST /api/auth/register
-// @access  Public
 export const register = async (req, res) => {
   try {
     const { name, email, password, role, storeName, storeDescription } = req.body;
 
-    // Validate required fields
     if (!name || !email || !password) {
       return res.status(400).json({ message: "Please fill in all fields" });
     }
 
-    // Prevent registering as admin directly
     if (role === "admin") {
       return res.status(400).json({ message: "Cannot register as admin" });
     }
 
-    // Check if user already exists
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: "Email already in use" });
     }
 
-    // Vendor must provide store name
     if (role === "vendor" && !storeName) {
       return res.status(400).json({ message: "Store name is required for vendors" });
     }
 
-    // Create user
     const user = await User.create({
       name,
       email,
@@ -42,19 +34,12 @@ export const register = async (req, res) => {
 
     const accessToken = sendTokens(res, user);
 
-    res.status(201).json({
-      message: "Registration successful",
-      accessToken,
-      user,
-    });
+    res.status(201).json({ message: "Registration successful", accessToken, user });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// @desc    Login user
-// @route   POST /api/auth/login
-// @access  Public
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -63,7 +48,6 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Please provide email and password" });
     }
 
-    // Find user and include password for comparison
     const user = await User.findOne({ email }).select("+password");
     if (!user) {
       return res.status(401).json({ message: "Invalid email or password" });
@@ -76,19 +60,12 @@ export const login = async (req, res) => {
 
     const accessToken = sendTokens(res, user);
 
-    res.status(200).json({
-      message: "Login successful",
-      accessToken,
-      user,
-    });
+    res.status(200).json({ message: "Login successful", accessToken, user });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// @desc    Refresh access token using refresh token cookie
-// @route   POST /api/auth/refresh
-// @access  Public
 export const refreshToken = async (req, res) => {
   try {
     const token = req.cookies.refreshToken;
@@ -112,21 +89,17 @@ export const refreshToken = async (req, res) => {
   }
 };
 
-// @desc    Logout — clear refresh token cookie
-// @route   POST /api/auth/logout
-// @access  Private
+// Fixed: sameSite none in production for cross-origin
 export const logout = (req, res) => {
+  const isProduction = process.env.NODE_ENV === "production";
   res.clearCookie("refreshToken", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "strict",
   });
   res.status(200).json({ message: "Logged out successfully" });
 };
 
-// @desc    Get current logged in user
-// @route   GET /api/auth/me
-// @access  Private
 export const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
