@@ -10,7 +10,6 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch current user on mount
   useEffect(() => {
     const fetchUser = async () => {
       const token = Cookies.get("accessToken");
@@ -32,7 +31,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (formData) => {
     const { data } = await api.post("/auth/register", formData);
-    Cookies.set("accessToken", data.accessToken, { expires: 1 / 96 }); // 15 min
+    Cookies.set("accessToken", data.accessToken, { expires: 1 / 96 });
     setUser(data.user);
     return data.user;
   };
@@ -50,10 +49,10 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  // Redirect based on role
+  // Fixed: vendor and admin now route correctly
   const getDashboardPath = (role) => {
-    if (role === "admin") return "/admin";
     if (role === "admin") return "/admin/dashboard";
+    if (role === "vendor") return "/vendor/dashboard";
     return "/shop";
   };
 
